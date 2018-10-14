@@ -661,55 +661,59 @@
                                 let atkmod = 0;
                                 let dmgmod = 0;
                                 let hasTWFS = false;
+                                let damageComments = [];
 
                                 // process each fighting style only once
                                 fightingStylesSelected.forEach((fightingStyle) => {
                                     if(fightingStyle == 'Great Weapon Fighting' && twohanded) {
                                         gwf = true;
+                                        damageComments.push("GWF");
                                     }
                                     if(fightingStyle == 'Archery' && ranged) {
                                         atkmod += 2;
+                                        damageComments.push("Archery");
                                     }
                                     if(fightingStyle== 'Dueling' && !(hasOffhand || ranged || twohanded)) {
-                                        log('applying Dueling +2 to ' + item.definition.name)
                                         dmgmod += 2;
-                                        log('damage mod now ' + dmgmod)
+                                        damageComments.push("Dueling");
                                     }
                                     if(fightingStyle == 'Two-Weapon Fighting') {
                                         hasTWFS = true;
                                     }
                                 });
 
-                                if(versatile && !(hasOffhand || shieldEquipped)) {
-                                    item.definition.damage.diceString = versatileDice;
-                                }
-
+                                // XXX this does not make sense, because we can't know if they want to use the weapon versatile, use Damage2 instead
+                                // if(versatile && !(hasOffhand || shieldEquipped)) {
+                                //     // XXX use local variable instead of changing input
+                                //     item.definition.damage.diceString = versatileDice;
+                                // }
+                            
+                                let monkDieSize = 0;
                                 if(item.definition.isMonkWeapon && monk_level > 0) {
-                                    let itemAvgDmg = 0;
+                                    let itemDiceString = '1d1';
                                     if(item.definition.damage != null) {
-                                        let dS = item.definition.damage.diceString;
-                                        let itemDieCount = parseInt(dS.substr(0, dS.indexOf('d')));
-                                        let itemDieSize = parseInt(dS.substr(dS.indexOf('d')+1));
-                                        itemAvgDmg = (itemDieCount * (itemDieSize + 1)) / 2;
+                                        itemDiceString = item.definition.damage.diceString;
                                     }
 
-                                    let monkDieSize = Math.floor((monk_level - 1) / 4) * 2 + 4;
-                                    let monkAvgDmg = monkDieSize = (1 + monkDieSize) / 2;
-
-                                    if(monkAvgDmg > itemAvgDmg) {
+                                    monkDieSize = Math.floor((monk_level - 1) / 4) * 2 + 4;
+                                    if(greaterDice(monkDieSize, itemDiceString)) {
+                                        // XXX use local variable instead of changing input
                                         item.definition.damage.diceString = '1d'+monkDieSize;
+                                        damageComments.push('Monk');
                                     }
 
                                     let str = getTotalAbilityScore(character, 1);
                                     let dex = getTotalAbilityScore(character, 2);
                                     if(dex > str) {
+                                        // XXX use local variable instead of changing input
                                         item.definition.attackType = 2;
                                     }
                                 }
 
                                 let dmgattr = _ABILITY[_ABILITIES[item.definition.attackType]];
                                 if(!hasTWFS && isOffhand) dmgattr = '0';
-
+                                damageComments.unshift(item.definition.damageType);
+                            
                                 // CREATE ATTACK
                                 let attack = {
                                     name: item.definition.name,
@@ -720,7 +724,7 @@
                                     },
                                     damage: {
                                         diceString: item.definition.damage != null ? item.definition.damage.diceString + (gwf ? 'ro<2' : '') : '',
-                                        type: item.definition.damageType,
+                                        type: damageComments.join(', '),
                                         attribute: dmgattr,
                                         mod: dmgmod
                                     },
@@ -740,6 +744,17 @@
                                         }
                                     }
                                 });
+
+                                // if using the weapon two handed would give more damage, and damage2 is available, then make 2H damage
+                                if ((!attack.damage2) && versatile && (!greaterDice(monkDieSize, versatileDice))) {
+                                    damageComments.push("2H");
+                                    attack.damage2 = {
+                                        diceString: versatileDice + (gwf ? 'ro<2' : ''),
+                                        type: damageComments.join(', '),
+                                        attribute: dmgattr,
+                                        mod: dmgmod
+                                    }
+                                }
 
                                 let repAttack = createRepeatingAttack(object, attack, {index: paIndex, itemid: row});
                                 Object.assign(repeating_attributes, repAttack);
@@ -1437,6 +1452,17 @@
         }
 
         return attributes;
+    };
+
+    const greaterDice = (leftSize, rightString) => {
+        if (!rightString) {
+            return true;
+        }
+        let rightCount = parseInt(rightString.substr(0, rightString.indexOf('d')));
+        let rightSize = parseInt(rightString.substr(rightString.indexOf('d')+1));
+        let rightDamage = (rightCount * (rightSize + 1)) / 2;
+        let leftDamage = (1 + leftSize) / 2;
+        return (leftDamage > rightDamage);
     };
 
     const ucFirst = (string) => {
