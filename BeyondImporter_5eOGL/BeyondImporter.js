@@ -29,20 +29,103 @@
     const intelligence_skills = ['arcana','history','investigation','nature','religion'];
     const wisdom_skills = ['animal_handling','insight','medicine','perception','survival'];
     const charisma_skills = ['deception','intimidation','performance','persuasion']
-
-    let class_spells = [];
-    let beyond_caller = {};
-    let object;
+    const script_name = 'BeyondImporter';
+    const state_name = 'BEYONDIMPORTER';
 
     // Styling for the chat responses.
     const style = "margin-left: 0px; overflow: hidden; background-color: #fff; border: 1px solid #000; padding: 5px; border-radius: 5px;";
     const buttonStyle = "background-color: #000; border: 1px solid #292929; border-radius: 3px; padding: 5px; color: #fff; text-align: center; float: right;"
 
+    const debug = false;
+ 
+    class Config {
+        constructor(beyond_caller) {
+            // deep copy config tree from state
+            let config = JSON.parse(JSON.stringify(state[state_name][beyond_caller.id].config));
+            for (let key in config) {
+                this[key] = config[key];
+            }
+        }
+    }   
+    
+    class Roll20Builder {
+        constructor(object) {
+            this.object = object;
+        }
+
+        static findExisting(settings) {
+            let search = {_type: "character"};
+            Object.assign(search, settings);
+            return findObjs(search, {caseInsensitive: true})
+        }
+    }
+
+    class Roll20NewObjectBuilder extends Roll20Builder {
+        constructor(settings) {
+            super(createObj("character", settings));
+        }
+    }
+
+    class Import {
+        constructor(beyond_caller, import_data) {
+            // Roll20 player calling beyond import
+            this.beyond_caller = beyond_caller;
+
+            // frozen configuration at time of call to beyond import
+            this.config = new Config(beyond_caller);
+
+            // pending class spells to import
+            this.class_spells = [];
+
+            // jack of all trades (currently disabled)
+            this.jack = '0';
+
+            // Beyond object deserialized from JSON
+            this.character = JSON.parse(import_data).character;
+
+            // Roll20 object builder
+            this.builder = null;
+        }
+
+        execute() {
+            this.builder = this.createBuilder();
+        }
+
+        createBuilder() {
+            let settings = { name: this.config.prefix + this.character.name + this.config.suffix };
+            let existing = null;
+            if (this.config.overwrite) {
+                let objects = Roll20Builder.findExisting(settings);
+                if(objects.length > 0) {
+                    existing = objects[0];
+                    for(let i = 1; i < objects.length; i++){
+                        objects[i].remove();
+                    }
+                }
+            }
+            if(existing !== null) {
+                return new Roll20Builder(existing);
+            } else {
+                if (playerIsGM(this.beyond_caller.id)) {
+                    
+                    settings.inplayerjournals = this.config.inplayerjournals;
+                    settings.controlledby = this.config.controlledby;
+                } else {
+                    settings.inplayerjournals = this.beyond_caller.id;
+                    settings.controlledby = this.beyond_caller.id;
+                }
+                return new Roll20NewObjectBuilder(settings);
+            }
+        }
+    }
+
+
+    let class_spells = [];
+    let beyond_caller = {};
+    let object;
+
     let jack = '0';
 
-    const script_name = 'BeyondImporter';
-    const state_name = 'BEYONDIMPORTER';
-    const debug = false;
     var spellTargetInAttacks = true;
     
     on('ready', function() {
@@ -59,9 +142,8 @@
         let command = args.shift().substring(1).trim();
 
         beyond_caller = getObj('player', msg.playerid);
-
         if (command == 'beyond') {
-            let importData = '';
+            let import_data = '';
             if(args.length < 1) { sendHelpMenu(beyond_caller); return; }
 
             let config = state[state_name][beyond_caller.id].config;
@@ -116,7 +198,7 @@
                         return;
 
                     case 'import':
-                        importData = v;
+                        import_data = v;
                         break;
 
                     default:
@@ -125,11 +207,13 @@
                 }
             }
 
-            if(importData != '') {
+            if(import_data != '') {
                 // REVISIT: maybe put this here?
                 // sendChat(script_name, '<div style="'+style+'">Character sheet import started.<br><p>Please do not start additional imports until it completes.</p></div>', null, {noarchive:true});
+                let beyond_import = new Import(beyond_caller, import_data);
+                beyond_import.execute();
 
-                let json = importData;
+                let json = import_data;
                 let character = JSON.parse(json).character;
 
                 class_spells = [];
@@ -166,6 +250,7 @@
                 let repeating_attributes = {};
 
                 object = null;
+
                 // Remove characters with the same name if overwrite is enabled.
                 if(state[state_name][beyond_caller.id].config.overwrite) {
                     let objects = findObjs({
