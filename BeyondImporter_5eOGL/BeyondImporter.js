@@ -195,72 +195,54 @@
                     };
                 }
 
-                let speedMods = getObjects(character, 'subType', 'speed');
-                if(speedMods != null) {
-                    speedMods.forEach((speedMod) => {
+                getObjects(character, 'subType', 'speed').forEach((speedMod) => {
                         // REVISIT: what item is this for?  boots of striding and springing use set: innate-speed-walking and Loadstone uses bonus: speed
                         // so maybe this is for some feat or class feature? we could scope the search to not the whole character to clarify this
                         if(speedMod.type == 'set') {
                             weightSpeeds.normal.walk = (speedMod.value > weightSpeeds.normal.walk ? speedMod.value : weightSpeeds.normal.walk);
                         }
-                    });
-                }
+                });
 
-                speedMods = getObjects(character, 'subType', 'innate-speed-flying');
-                if(speedMods != null) {
-                    speedMods.forEach((speedMod) => {
-                        if(speedMod.type == 'set' && speedMod.id.indexOf('spell') == -1) {
-                            if(speedMod.value == null) speedMod.value = weightSpeeds.normal.walk;
-                            weightSpeeds.normal.fly = (speedMod.value > weightSpeeds.normal.fly ? speedMod.value : weightSpeeds.normal.fly);
-                        }
-                    });
-                }
+                getObjects(character, 'subType', 'innate-speed-flying').forEach((speedMod) => {
+                    if(speedMod.type == 'set' && speedMod.id.indexOf('spell') == -1) {
+                        if(speedMod.value == null) speedMod.value = weightSpeeds.normal.walk;
+                        weightSpeeds.normal.fly = (speedMod.value > weightSpeeds.normal.fly ? speedMod.value : weightSpeeds.normal.fly);
+                    }
+                });
+            
+                getObjects(character, 'subType', 'innate-speed-swimming').forEach((speedMod) => {
+                    if(speedMod.type == 'set' && speedMod.id.indexOf('spell') == -1) {
+                        if(speedMod.value == null) speedMod.value = weightSpeeds.normal.walk;
+                        weightSpeeds.normal.swim = (speedMod.value > weightSpeeds.normal.swim ? speedMod.value : weightSpeeds.normal.swim);
+                    }
+                });
 
-                speedMods = getObjects(character, 'subType', 'innate-speed-swimming');
-                if(speedMods != null) {
-                    speedMods.forEach((speedMod) => {
-                        if(speedMod.type == 'set' && speedMod.id.indexOf('spell') == -1) {
-                            if(speedMod.value == null) speedMod.value = weightSpeeds.normal.walk;
-                            weightSpeeds.normal.swim = (speedMod.value > weightSpeeds.normal.swim ? speedMod.value : weightSpeeds.normal.swim);
-                        }
-                    });
-                }
-
-                speedMods = getObjects(character, 'subType', 'innate-speed-climbing');
-                if(speedMods != null) {
-                    speedMods.forEach((speedMod) => {
-                        if(speedMod.type == 'set' && speedMod.id.indexOf('spell') == -1) {
-                            if(speedMod.value == null) speedMod.value = weightSpeeds.normal.walk;
-                            weightSpeeds.normal.climb = (speedMod.value > weightSpeeds.normal.climb ? speedMod.value : weightSpeeds.normal.climb);
-                        }
-                    });
-                }
-
-                speedMods = getObjects(character, 'subType', 'unarmored-movement');
-                if(speedMods != null) {
-                    speedMods.forEach((speedMod) => {
-                        if(speedMod.type == 'bonus') {
-                            speedMod.value = isNaN(weightSpeeds.normal.walk + speedMod.value) ? 0 : speedMod.value;
-                            weightSpeeds.normal.walk += speedMod.value;
-                            if(weightSpeeds.normal.fly > 0) weightSpeeds.normal.fly += speedMod.value;
-                            if(weightSpeeds.normal.swim > 0) weightSpeeds.normal.swim += speedMod.value;
-                            if(weightSpeeds.normal.climb > 0) weightSpeeds.normal.climb += speedMod.value;
-                        }
-                    });
-                }
-
-                speedMods = getObjects(character, 'subType', 'speed');
-                if(speedMods != null) {
-                    speedMods.forEach((speedMod) => {
-                        if(speedMod.type == 'bonus') {
-                            speedMod.value = isNaN(weightSpeeds.normal.walk + speedMod.value) ? 0 : speedMod.value;
-                            weightSpeeds.normal.walk += speedMod.value;
-                            if(weightSpeeds.normal.fly > 0) weightSpeeds.normal.fly += speedMod.value;
-                            if(weightSpeeds.normal.swim > 0) weightSpeeds.normal.swim += speedMod.value;
-                            if(weightSpeeds.normal.climb > 0) weightSpeeds.normal.climb += speedMod.value;
-                        }
-                    });
-                }
+                getObjects(character, 'subType', 'innate-speed-climbing').forEach((speedMod) => {
+                    if(speedMod.type == 'set' && speedMod.id.indexOf('spell') == -1) {
+                        if(speedMod.value == null) speedMod.value = weightSpeeds.normal.walk;
+                        weightSpeeds.normal.climb = (speedMod.value > weightSpeeds.normal.climb ? speedMod.value : weightSpeeds.normal.climb);
+                    }
+                });
+            
+                getObjects(character, 'subType', 'unarmored-movement').forEach((speedMod) => {
+                    if(speedMod.type == 'bonus') {
+                        speedMod.value = isNaN(weightSpeeds.normal.walk + speedMod.value) ? 0 : speedMod.value;
+                        weightSpeeds.normal.walk += speedMod.value;
+                        if(weightSpeeds.normal.fly > 0) weightSpeeds.normal.fly += speedMod.value;
+                        if(weightSpeeds.normal.swim > 0) weightSpeeds.normal.swim += speedMod.value;
+                        if(weightSpeeds.normal.climb > 0) weightSpeeds.normal.climb += speedMod.value;
+                    }
+                });
+            
+                getObjects(character, 'subType', 'speed').forEach((speedMod) => {
+                    if(speedMod.type == 'bonus') {
+                        speedMod.value = isNaN(weightSpeeds.normal.walk + speedMod.value) ? 0 : speedMod.value;
+                        weightSpeeds.normal.walk += speedMod.value;
+                        if(weightSpeeds.normal.fly > 0) weightSpeeds.normal.fly += speedMod.value;
+                        if(weightSpeeds.normal.swim > 0) weightSpeeds.normal.swim += speedMod.value;
+                        if(weightSpeeds.normal.climb > 0) weightSpeeds.normal.climb += speedMod.value;
+                    }
+                });
 
                 let speed = weightSpeeds.normal.walk + 'ft.';
                 for(let key in weightSpeeds.normal){
@@ -274,14 +256,11 @@
 
                 // Languages
                 if(state[state_name][beyond_caller.id].config.imports.languages) {
-                    let languages = getObjects(character, 'type', 'language');
                     if(languageGrouping) {
                         let langs = [];
-                        if(languages != null) {
-                            languages.forEach((language) => {
+                        getObjects(character, 'type', 'language').forEach((language) => {
                                 langs.push(language.friendlySubtypeName);
-                            });
-                        }
+                        });
 
                         let row = getRepeatingRowIds('proficiencies', 'prof_type', 'LANGUAGE')[0];
 
@@ -293,17 +272,15 @@
                         Object.assign(repeating_attributes, attributes);
                     }
                     else {
-                        if(languages != null) {
-                            languages.forEach((language) => {
-                                let row = getRepeatingRowIds('proficiencies', 'name', language.friendlySubtypeName)[0];
-                                let attributes = {};
-                                attributes["repeating_proficiencies_"+row+"_name"] = language.friendlySubtypeName;
-                                attributes["repeating_proficiencies_"+row+"_prof_type"] = 'LANGUAGE';
-                                attributes["repeating_proficiencies_"+row+"_options-flag"] = '0';
+                        getObjects(character, 'type', 'language').forEach((language) => {
+                            let row = getRepeatingRowIds('proficiencies', 'name', language.friendlySubtypeName)[0];
+                            let attributes = {};
+                            attributes["repeating_proficiencies_"+row+"_name"] = language.friendlySubtypeName;
+                            attributes["repeating_proficiencies_"+row+"_prof_type"] = 'LANGUAGE';
+                            attributes["repeating_proficiencies_"+row+"_options-flag"] = '0';
 
-                                Object.assign(repeating_attributes, attributes);
-                            });
-                        }
+                            Object.assign(repeating_attributes, attributes);
+                        });
                     }
                 }
 
@@ -563,13 +540,10 @@
                 if(state[state_name][beyond_caller.id].config.imports.inventory) {
                     // accumulate unique fighting styles selected
                     let fightingStylesSelected = new Set()
-                    let fightingStyles = getObjects(character.classes, 'name', 'Fighting Style');
-                    fightingStyles.forEach((fS) => {
-                        let fsOpts = getObjects(character.choices, 'componentId', fS.id);
-                        fsOpts.forEach((fsOpt) => {
+                    getObjects(character.classes, 'name', 'Fighting Style').forEach((fS) => {
+                        getObjects(character.choices, 'componentId', fS.id).forEach((fsOpt) => {
                             if(fsOpt.optionValue != null) {
-                                let selOpts = getObjects(fsOpt.options, 'id', fsOpt.optionValue);
-                                selOpts.forEach((selOpt) => {
+                                getObjects(fsOpt.options, 'id', fsOpt.optionValue).forEach((selOpt) => {
                                     fightingStylesSelected.add(selOpt.label)
                                 });
                             }
@@ -623,8 +597,7 @@
                                     properties += prop.name + ', ';
                                 });
 
-                                let cv = getObjects(character.characterValues, 'valueTypeId', item.entityTypeId);
-                                cv.forEach((v) => {
+                                getObjects(character.characterValues, 'valueTypeId', item.entityTypeId).forEach((v) => {
                                     if(v.typeId == 18 && v.value === true) {
                                         hasOffhand = true;
                                         if(v.valueId == item.id) {
@@ -651,8 +624,7 @@
                                 }
 
                                 // Hexblade's Weapon
-                                let characterValues = getObjects(character.characterValues, 'valueId', item.id);
-                                characterValues.forEach((cv) => {
+                                getObjects(character.characterValues, 'valueId', item.id).forEach((cv) => {
                                     if(cv.typeId == 29 && getTotalAbilityScore(character, 6) >= getTotalAbilityScore(character, item.definition.attackType)) {
                                         item.definition.attackType = 6;
                                     }
@@ -789,8 +761,7 @@
                                         case 'armor-class':
                                             hasArmor = true;
                                             // XXX should this really search the entire character?  is this for feats or class features?
-                                            let aac = getObjects(character, 'subType', 'armored-armor-class');
-                                            aac.forEach((aacb) => {
+                                            getObjects(character, 'subType', 'armored-armor-class').forEach((aacb) => {
                                                 grantedMod.value = parseInt(grantedMod.value) + parseInt(aacb.value);
                                             });
                                             // fall through
@@ -807,10 +778,9 @@
                                 }
                             });
                             if(item.definition.hasOwnProperty('armorClass')){
-                                let aac = getObjects(character, 'subType', 'armored-armor-class');
-                                let ac = item.definition.armorClass;
-                                aac.forEach((aacb) => {
-                                    ac = parseInt(ac) + parseInt(aacb.value);
+                                let ac = parseInt(item.definition.armorClass);
+                                getObjects(character, 'subType', 'armored-armor-class').forEach((aacb) => {
+                                    ac += parseInt(aacb.value);
                                 });
                                 _itemmodifiers += ', AC: ' + ac;
                                 hasArmor = true;
@@ -831,7 +801,6 @@
                     }
 
                     let row = getRepeatingRowIds('inventory', 'itemname', 'Unarmored Defense')[x];
-
                     let name = 'Unarmored Defense';
                     let modifiers = '';
 
@@ -865,14 +834,11 @@
                     x++;
                 });
 
-                if(character.spells.race.length > 0) {
-                    let spells = character.spells.race;
-                    spells.forEach((spell) => {
-                        spell.spellCastingAbility = _ABILITIES[spell.spellCastingAbilityId];
-                        class_spells.push(spell);
-                    });
-                }
-
+                character.spells.race.forEach((spell) => {
+                    spell.spellCastingAbility = _ABILITIES[spell.spellCastingAbilityId];
+                    class_spells.push(spell);
+                });
+            
                 skills.forEach((skill) => {
                     let skill_prof = getObjects(proficiencies, 'subType', skill.replace(/_/g, '-'));
                     if(skill_prof.length == 0) {
@@ -936,9 +902,7 @@
                 }
 
                 // Expertise
-                let exp = getObjects(character, 'type', 'expertise');
-                for(let i in exp) {
-                    let expertise = exp[i];
+                getObjects(character, 'type', 'expertise').foreach((expertise) => {
                     let type = expertise.subType.replace(/-/g, '_');
                     if(skills.includes(type)){
                         let attributes = {};
@@ -955,11 +919,10 @@
                         attributes["repeating_proficiencies_"+row+"_options-flag"] = '0';
                         Object.assign(repeating_attributes, attributes);
                     }
-                }
+                });
 
                 // Adhoc Expertise
-                let characterValues = getObjects(character.characterValues, 'typeId', 26);
-                characterValues.forEach((cv) => {
+                getObjects(character.characterValues, 'typeId', 26).forEach((cv) => {
                     let attributes = {};
                     if(cv.value == 4) {
                         let objs = getObjects(character, 'type', 'proficiency');
@@ -976,11 +939,10 @@
                 });
 
                 // Other Bonuses
-                // XXX what are these?  should they really scan the ENTIRE character?
-                let bonuses = getObjects(character, 'type', 'bonus');
                 let bonus_attributes = {};
                 if(state[state_name][beyond_caller.id].config.imports.bonuses){
-                    bonuses.forEach((bonus) => {
+                    // XXX what are these?  should they really scan the ENTIRE character?
+                    getObjects(character, 'type', 'bonus').forEach((bonus) => {
                         if(!bonus.id.includes('spell')){
                             switch(bonus.subType){
                                 default:
@@ -996,10 +958,9 @@
 
                 // Initiative Style
                 let init_style = '@{d20}';
-                let init_mods = getObjects(character.modifiers, 'subType', 'initiative');
                 let initadv = false;
                 let initdis = false;
-                init_mods.forEach((mod) => {
+                getObjects(character.modifiers, 'subType', 'initiative').forEach((mod) => {
                     if(mod.type == 'advantage') {
                         initadv = true;
                     }
@@ -1011,9 +972,8 @@
                 if(!initadv && initdis) init_style = '{@{d20},@{d20}}kl1';
 
                 // Saving Throw Bonuses and proficiencies
-                let stBonuses = getObjects(character.modifiers, 'subType', 'saving-throws', ['item']);
                 let stBonTotals = [0,0,0,0,0,0,0];
-                stBonuses.forEach((bonus) => {
+                getObjects(character.modifiers, 'subType', 'saving-throws', ['item']).forEach((bonus) => {
                     if(bonus.statId != null) {
                         stBonTotals[0] += Math.floor((getTotalAbilityScore(character, bonus.statId) - 10) / 2);
                     }
@@ -1023,9 +983,7 @@
                 });
                 for(let i in _ABILITIES) {
                     let abl = _ABILITY[_ABILITIES[i]];
-                    let stBonuses = getObjects(character.modifiers, 'subType', abl+'-saving-throws', ['item']);
-                    let stBonTotals = [0,0,0,0,0,0,0];
-                    stBonuses.forEach((bonus) => {
+                    getObjects(character.modifiers, 'subType', abl+'-saving-throws', ['item']).forEach((bonus) => {
                         if(bonus.statId != null) {
                             stBonTotals[parseInt(i)] += Math.floor((getTotalAbilityScore(character, bonus.statId) - 10) / 2);
                         }
@@ -1202,7 +1160,7 @@
 
         // scan for modifiers except those in items, because we will get those bonuses from the items once they are imported
         // NOTE: this also handles the problem that Beyond includes modifiers from items that are not currently equipped/attuned
-        let hpLevelBons = getObjects(character.modifiers, 'subType', 'hit-points-per-level', ['item']).forEach((bons) => {
+        getObjects(character.modifiers, 'subType', 'hit-points-per-level', ['item']).forEach((bons) => {
             hp += total_level * bons.value;
         });
 
@@ -1707,7 +1665,8 @@
         return total;
     };
 
-    //return an array of objects according to key, value, or key and value matching, optionally ignoring objects in array of names
+    // return an array of objects according to key, value, or key and value matching, optionally ignoring objects in array of names
+    // NOTE: never returns null or undefined, returns empty array if nothing is found
     const getObjects = (obj, key, val, except) => {
         except = except || [];
         let objects = [];
